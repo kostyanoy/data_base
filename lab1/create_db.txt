@@ -1,0 +1,59 @@
+CREATE TABLE planet_types (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE government_types (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE result_types (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE battle_types (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE systems (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL,
+ light_years_diameter INTEGER
+);
+
+CREATE TABLE planets (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL,
+ population BIGINT,
+ type_id INTEGER REFERENCES planet_types,
+ system_id INTEGER REFERENCES systems
+);
+
+CREATE TABLE civilizations (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL,
+ creation_date DATE,
+ government_id INTEGER REFERENCES government_types,
+ capital_id INTEGER REFERENCES planets
+);
+
+CREATE TABLE battles (
+ id SERIAL PRIMARY KEY,
+ name VARCHAR(50) UNIQUE NOT NULL,
+ start_date DATE,
+ length INTEGER,
+ type_id INTEGER REFERENCES battle_types,
+ system_id INTEGER REFERENCES systems
+);
+
+CREATE TABLE battle_civilization (
+ battle_id integer REFERENCES battles,
+ civilization_id integer REFERENCES civilizations,
+ participants BIGINT,
+ dead BIGINT,
+ result_id INTEGER REFERENCES result_types,
+ PRIMARY KEY (battle_id, civilization_id)
+);
