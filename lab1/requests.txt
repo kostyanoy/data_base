@@ -1,0 +1,72 @@
+//вывести количество битв цивилизаций
+
+SELECT c.name as Цивилизация, COUNT(b.id) as Битв
+FROM civilizations c
+LEFT JOIN battle_civilization bc on bc.civilization_id = c.id
+LEFT JOIN battles b on bc.battle_id = b.id
+LEFT JOIN result_types r on r.id = bc.result_id
+GROUP BY c.name;
+
+
+//все битвы цивилизаций
+
+select c.name AS Цивилизация, 
+b.name AS Битва, 
+bc.participants AS Участники, 
+bc.dead AS Погибло, 
+r.name AS Результат
+from battle_civilization bc 
+JOIN battles b on b.id = bc.battle_id
+JOIN civilizations c on c.id = bc.civilization_id
+JOIN result_types r on r.id = bc.result_id; 
+
+
+//длительность и количество погибших в битвах
+
+SELECT c.name as Цивилизация, 
+SUM(b.length) as Суммарно_дней, 
+SUM(bc.dead) as Погибло
+FROM civilizations c
+JOIN battle_civilization bc on c.id = bc.civilization_id
+JOIN battles b on b.id = bc.battle_id
+GROUP BY c.id
+HAVING SUM(bc.dead) > 20000;
+
+
+//вывести количество битв цивилизаций и краткая сводка
+
+WITH _battles AS (
+    SELECT c.id AS civ_id, c.name AS civ, r.id AS res_id
+    FROM civilizations c
+    LEFT JOIN battle_civilization bc on bc.civilization_id = c.id
+    LEFT JOIN battles b on bc.battle_id = b.id
+    LEFT JOIN result_types r on r.id = bc.result_id
+) 
+SELECT DISTINCT b.civ AS Цивилизация, 
+t3.total as Всего_битв, 
+t1.losses AS Сильный_поражений,
+t2.wins AS Уверенных_побед,
+CASE 
+    WHEN t1.losses > 2 THEN 'Легкая добыча'
+    WHEN t2.wins > 1 THEN 'Лучше не связываться'
+    ELSE 'Потенциальный союзник'
+END as Описание
+FROM _battles as b
+LEFT JOIN (
+    SELECT b1.civ_id AS id, COUNT(*) as losses
+    FROM _battles b1
+    WHERE b1.res_id > 5
+    GROUP BY b1.civ_id 
+) as t1 ON b.civ_id = t1.id
+LEFT JOIN (
+    SELECT b2.civ_id AS id, COUNT(*) as wins  
+    FROM _battles b2
+    WHERE b2.res_id < 3
+    GROUP BY b2.civ_id
+) as t2 ON b.civ_id = t2.id
+LEFT JOIN (
+    SELECT b3.civ_id AS id, COUNT(b3.res_id) as total
+    FROM _battles b3
+    GROUP BY b3.civ_id 
+) as t3 ON b.civ_id = t3.id
+ORDER BY 2 DESC;
