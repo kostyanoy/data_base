@@ -79,6 +79,7 @@ HAVING AVG(ВОЗРАСТ) = (
 
 
 
+
 //шестой запрос
 
 SELECT ГРУППА, Л.ИД, ФАМИЛИЯ, ИМЯ, ОТЧЕСТВО, П_ПРКОК_ИД, СОСТОЯНИЕ 
@@ -104,7 +105,7 @@ ORDER BY 3, 4;
 //седьмой запрос
 
 WITH ЛЮДИ AS (
-	SELECT DISTINCT Л.ИД
+	SELECT DISTINCT Л.ИД, П.УЧЕБНЫЙ_ГОД
 	FROM Н_ЛЮДИ Л
 	JOIN Н_ОБУЧЕНИЯ О ON О.ЧЛВК_ИД = Л.ИД
 	JOIN Н_УЧЕНИКИ У ON У.ЧЛВК_ИД = О.ЧЛВК_ИД
@@ -112,12 +113,14 @@ WITH ЛЮДИ AS (
 	JOIN Н_ОТДЕЛЫ ОТ ON ОТ.ИД = П.ОТД_ИД
 	WHERE ОТ.КОРОТКОЕ_ИМЯ = 'КТиУ'
 ), ОТЛИЧНИКИ AS (
-	SELECT Л.ИД
+	SELECT Л.ИД, Л.УЧЕБНЫЙ_ГОД
 	FROM ЛЮДИ Л
 	JOIN Н_ВЕДОМОСТИ В ON В.ЧЛВК_ИД = Л.ИД
-	GROUP BY 1
+	GROUP BY Л.ИД, Л.УЧЕБНЫЙ_ГОД
 	HAVING COUNT(*) = SUM(CASE WHEN ОЦЕНКА = 'зачет' OR ОЦЕНКА = '5' OR ОЦЕНКА = 'осв' OR ОЦЕНКА = '99' THEN 1 ELSE 0 END)
 	ORDER BY 1
 )
-SELECT COUNT(*) AS ОТЛИЧНИКОВ 
-FROM ОТЛИЧНИКИ;
+SELECT УЧЕБНЫЙ_ГОД, COUNT(*) AS ОТЛИЧНИКОВ 
+FROM ОТЛИЧНИКИ
+GROUP BY УЧЕБНЫЙ_ГОД
+ORDER BY 1;
