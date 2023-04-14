@@ -1,0 +1,22 @@
+CREATE TABLE civ_log (
+ id SERIAL PRIMARY KEY,
+ civilization_id INTEGER,
+ name VARCHAR(50) NULL,
+ creation_date DATE,
+ government_id INTEGER REFERENCES government_types,
+ capital_id INTEGER REFERENCES planets,
+ actual_before TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION log_civilizations_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO civ_log(civilization_id, name, creation_date, government_id, capital_id, actual_before)
+  VALUES(OLD.id, OLD.name, OLD.creation_date, OLD.government_id, OLD.capital_id, NOW());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER civilizations_trigger 
+BEFORE UPDATE ON civilizations
+FOR EACH ROW EXECUTE PROCEDURE log_civilizations_changes();
