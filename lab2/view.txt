@@ -1,0 +1,49 @@
+
+//все битвы цивилизаций
+
+SELECT c.name AS Цивилизация, 
+b.name AS Битва, 
+bc.participants AS Участники, 
+bc.dead AS Погибло, 
+r.name AS Результат
+from battle_civilization bc 
+JOIN battles b on b.id = bc.battle_id
+JOIN civilizations c on c.id = bc.civilization_id
+JOIN result_types r on r.id = bc.result_id; 
+
+// сохраним этот запрос как представление, чтобы можно было к нему быстро обратиться
+
+CREATE OR REPLACE VIEW all_battles AS
+SELECT c.name AS Цивилизация, 
+b.name AS Битва, 
+bc.participants AS Участники, 
+bc.dead AS Погибло, 
+r.name AS Результат
+from battle_civilization bc 
+JOIN battles b on b.id = bc.battle_id
+JOIN civilizations c on c.id = bc.civilization_id
+JOIN result_types r on r.id = bc.result_id; 
+
+// обратиться к представлению 
+
+SELECT * FROM all_battles;
+SELECT * FROM all_battles
+WHERE Цивилизация = 'Люди';
+
+// материализованное представление
+
+CREATE MATERIALIZED VIEW all_battles_mv 
+AS
+SELECT c.name AS Цивилизация, 
+b.name AS Битва, 
+bc.participants AS Участники, 
+bc.dead AS Погибло, 
+r.name AS Результат
+from battle_civilization bc 
+JOIN battles b on b.id = bc.battle_id
+JOIN civilizations c on c.id = bc.civilization_id
+JOIN result_types r on r.id = bc.result_id;
+
+// обновить материалитзованное представление
+
+REFRESH MATERIALIZED VIEW all_battles_mv;
